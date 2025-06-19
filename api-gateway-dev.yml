@@ -1,0 +1,104 @@
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: true  
+server:
+  port: 9000
+
+api:
+  prefix: api
+  version: v1
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true  # Kích hoạt tính năng định tuyến từ Eureka
+      # Định nghĩa các route nếu cần
+      # routes:
+      #   - id: websocket_route
+      #     uri: lb:ws://conversation-service
+      #     predicates:
+      #       - Path=/ws/**
+      #     filters:
+      #       - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+
+      # Cấu hình các bộ lọc mặc định áp dụng cho tất cả các route
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+
+      # Cấu hình CORS toàn cục để cho phép các nguồn truy cập từ các địa chỉ cụ thể
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          "[/**]":
+            allow-credentials: true
+            allowed-origins:
+              - "http://localhost:3000"  # Cấu hình nguồn được phép
+            allowed-headers:
+              - "*"  # Cho phép tất cả các header
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+
+      # Kích hoạt tính năng phát hiện dịch vụ để Gateway có thể tự động tạo các route từ các microservices
+
+
+
+#springdoc:
+#  swagger-ui:
+#    urls:
+#      - name: conversation-service
+#        url: /v3/api-docs/conversation-service
+#      - name: friend-service
+#        url: /v3/api-docs/friend-service
+#      - name: group-service
+#        url: /v3/api-docs/group-service
+#      - name: media-service
+#        url: /v3/api-docs/media-service
+#      - name: notification-service
+#        url: /v3/api-docs/notification-service
+#      - name: post-service
+#        url: /v3/api-docs/post-service
+#      - name: user-service
+#        url: /v3/api-docs/user-service
+#      - name: exam-service
+#        url: /v3/api-docs/exam-service
+#      - name: survey-service
+#        url: /v3/api-docs/survey-service
+#      - name: report-service
+#        url: /v3/api-docs/report-service
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      apiGateway:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        automatic-transition-from-open-to-half-open-enabled: true
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        wait-duration-in-open-state: 5s
+        sliding-window-type: COUNT_BASED
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+#management:
+#  tracing:
+#    sampling:
+#      probability: 1.0
+
